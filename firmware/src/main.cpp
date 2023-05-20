@@ -94,11 +94,11 @@ void setup()
   WiFi.begin(WIFI_SSID, WIFI_PSWD);
   */
   wifiMulti.addAP(_MULTI_SSID1, _MULTI_KEY1);
-  wifiMulti.addAP(_MULTI_SSID2, _MULTI_KEY2);
-  wifiMulti.addAP(_MULTI_SSID3, _MULTI_KEY3);
-  wifiMulti.addAP(_MULTI_SSID4, _MULTI_KEY4);
-  wifiMulti.addAP(_MULTI_SSID5, _MULTI_KEY5);
-  wifiMulti.addAP(_MULTI_SSID6, _MULTI_KEY6);
+  // wifiMulti.addAP(_MULTI_SSID2, _MULTI_KEY2);
+  // wifiMulti.addAP(_MULTI_SSID3, _MULTI_KEY3);
+  // wifiMulti.addAP(_MULTI_SSID4, _MULTI_KEY4);
+  // wifiMulti.addAP(_MULTI_SSID5, _MULTI_KEY5);
+  // wifiMulti.addAP(_MULTI_SSID6, _MULTI_KEY6);
 
   for(int i = 0; i<10; i++) {
     if ((wifiMulti.run() == WL_CONNECTED)) {
@@ -131,13 +131,15 @@ void setup()
   I2SSampler *i2s_sampler = new I2SMicSampler(i2s_mic_pins, false);
 #else
   // Use the internal ADC
-  I2SSampler *i2s_sampler = new ADCSampler(ADC_UNIT_1, ADC_MIC_CHANNEL);
+  // I2SSampler *i2s_sampler = new ADCSampler(ADC_UNIT_1, ADC_MIC_CHANNEL);
 #endif
 
   // start the i2s speaker output
   I2SOutput *i2s_output = new I2SOutput();
   i2s_output->start(I2S_NUM_1, i2s_speaker_pins);
   Speaker *speaker = new Speaker(i2s_output);
+
+  // speaker->playLife();
 
   // indicator light to show when we are listening
   IndicatorLight *indicator_light = new IndicatorLight();
