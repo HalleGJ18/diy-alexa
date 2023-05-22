@@ -21,6 +21,7 @@ private:
     IntentResult changeColour(const Intent &intent);
     IntentResult tellJoke();
     IntentResult life();
+    IntentResult weather(const Intent &intent);
 
     Speaker *m_speaker;
 

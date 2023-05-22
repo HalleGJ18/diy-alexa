@@ -2,6 +2,11 @@
 #include "IntentProcessor.h"
 #include "Speaker.h"
 #include <dotstar_wing.h>
+#include <HTTPClient.h>
+#include <string>
+#include <ArduinoJson.h>
+
+using namespace std;
 
 IntentProcessor::IntentProcessor(Speaker *speaker)
 {
@@ -83,6 +88,62 @@ IntentResult IntentProcessor::life()
     return SILENT_SUCCESS;
 }
 
+IntentResult IntentProcessor::weather(const Intent &intent)
+{
+    // Serial.printf("location: %s\n",intent.location_name.c_str());
+    // Serial.printf("coords: %.f, %.f\n",intent.location_lat,intent.location_long);
+    // Serial.printf("text: %s\n",intent.text.c_str());
+    
+    // Serial.printf("query weather api\n");
+
+    m_speaker->playOK();
+
+    string coords = std::to_string(intent.location_lat); 
+    coords += ",";
+    coords += std::to_string(intent.location_long);
+
+    string endpoint = "http://api.weatherapi.com/v1/current.json?key=18b95064517e4cc3934143406232105&q=" + coords + "&aqi=no";
+
+    // Serial.printf(endpoint.c_str());
+    // Serial.printf("\n");
+
+    HTTPClient http;
+
+    String url = String(endpoint.c_str());
+
+    http.begin(url);
+
+    String payload;
+    
+    int httpCode = http.GET();
+    if (httpCode > 0) { //Check for the returning code
+ 
+        payload = http.getString();
+        // Serial.println(httpCode);
+        // Serial.println(payload);
+      }
+ 
+    else {
+      Serial.println("Error on HTTP request");
+    }
+ 
+    http.end(); //Free the resources
+
+    StaticJsonDocument<500> filter;
+    filter["current"]["temp_c"] = true;
+    filter["current"]["condition"]["text"] = true;
+
+    StaticJsonDocument<500> weatherJson;
+    deserializeJson(weatherJson, payload, DeserializationOption::Filter(filter));
+
+    String temp = weatherJson["current"]["temp_c"];
+    String condition = weatherJson["current"]["condition"]["text"];
+
+    Serial.printf("The weather in %s is %s C and %s\n", intent.location_name.c_str(), temp, condition);
+
+    return SILENT_SUCCESS;
+}
+
 IntentResult IntentProcessor::changeColour(const Intent &intent)
 {
     Serial.printf(
@@ -128,6 +189,10 @@ IntentResult IntentProcessor::processIntent(const Intent &intent)
     if (intent.intent_name == "Change_colour")
     {
         return changeColour(intent);
+    }
+    if (intent.intent_name == "Weather")
+    {
+        return weather(intent);
     }
 
     return FAILED;

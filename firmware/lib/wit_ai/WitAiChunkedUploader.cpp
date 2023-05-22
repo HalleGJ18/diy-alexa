@@ -78,6 +78,11 @@ Intent WitAiChunkedUploader::getResults()
         filter["intents"][0]["confidence"] = true;
         filter["traits"]["wit$on_off"][0]["value"] = true;
         filter["traits"]["wit$on_off"][0]["confidence"] = true;
+        // filter["entities"]["wit$location:location"][0]["resolved"]["values"][0]["name"] = true;
+        filter["entities"]["wit$location:location"][0]["body"] = true;
+        filter["entities"]["wit$location:location"][0]["resolved"]["values"][0]["coords"]["lat"] = true;
+        filter["entities"]["wit$location:location"][0]["resolved"]["values"][0]["coords"]["long"] = true;
+        // filter["entities"]["wit$location:location"][0]["resolved"]["values"][0] = true;
         StaticJsonDocument<500> doc;
         deserializeJson(doc, *m_wifi_client, DeserializationOption::Filter(filter));
 
@@ -88,6 +93,14 @@ Intent WitAiChunkedUploader::getResults()
         float device_confidence = doc["entities"]["device:device"][0]["confidence"];
         const char *trait_value = doc["traits"]["wit$on_off"][0]["value"];
         float trait_confidence = doc["traits"]["wit$on_off"][0]["confidence"];
+        // const char *location_name = doc["entities"]["wit$location:location"][0]["resolved"]["values"][0]["name"];
+        const char *location_name = doc["entities"]["wit$location:location"][0]["body"];
+        float location_lat = doc["entities"]["wit$location:location"][0]["resolved"]["values"][0]["coords"]["lat"];
+        float location_long = doc["entities"]["wit$location:location"][0]["resolved"]["values"][0]["coords"]["long"];
+        
+        // Serial.printf("text: %s\n",text);
+        // Serial.printf("name: %s\n",location_name);
+        // Serial.printf("coords: %.f, %.f\n",location_lat,location_long);
 
         return Intent{
             .text = (text ? text : ""),
@@ -96,7 +109,12 @@ Intent WitAiChunkedUploader::getResults()
             .device_name = (device_name ? device_name : ""),
             .device_confidence = device_confidence,
             .trait_value = (trait_value ? trait_value : ""),
-            .trait_confidence = trait_confidence};
+            .trait_confidence = trait_confidence,
+            .location_name = (location_name ? location_name : ""),
+            .location_lat = location_lat,
+            .location_long = location_long
+            };
+            
     }
     return Intent{};
 }
