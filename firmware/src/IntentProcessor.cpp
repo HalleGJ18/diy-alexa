@@ -90,45 +90,34 @@ IntentResult IntentProcessor::life()
 
 IntentResult IntentProcessor::weather(const Intent &intent)
 {
-    // Serial.printf("location: %s\n",intent.location_name.c_str());
-    // Serial.printf("coords: %.f, %.f\n",intent.location_lat,intent.location_long);
-    // Serial.printf("text: %s\n",intent.text.c_str());
-    
-    // Serial.printf("query weather api\n");
 
-    m_speaker->playOK();
-
+    // construct API url
     string coords = std::to_string(intent.location_lat); 
     coords += ",";
     coords += std::to_string(intent.location_long);
 
     string endpoint = "http://api.weatherapi.com/v1/current.json?key=18b95064517e4cc3934143406232105&q=" + coords + "&aqi=no";
 
-    // Serial.printf(endpoint.c_str());
-    // Serial.printf("\n");
-
     HTTPClient http;
 
     String url = String(endpoint.c_str());
 
     http.begin(url);
-
     String payload;
-    
+
+    // query weather API
     int httpCode = http.GET();
-    if (httpCode > 0) { //Check for the returning code
+    if (httpCode > 0) {
  
         payload = http.getString();
-        // Serial.println(httpCode);
-        // Serial.println(payload);
       }
  
     else {
       Serial.println("Error on HTTP request");
     }
- 
     http.end(); //Free the resources
 
+    // filter relevant information
     StaticJsonDocument<500> filter;
     filter["current"]["temp_c"] = true;
     filter["current"]["condition"]["text"] = true;
@@ -136,10 +125,17 @@ IntentResult IntentProcessor::weather(const Intent &intent)
     StaticJsonDocument<500> weatherJson;
     deserializeJson(weatherJson, payload, DeserializationOption::Filter(filter));
 
-    String temp = weatherJson["current"]["temp_c"];
-    String condition = weatherJson["current"]["condition"]["text"];
 
-    Serial.printf("The weather in %s is %s C and %s\n", intent.location_name.c_str(), temp, condition);
+    // output information
+
+    string temp = weatherJson["current"]["temp_c"];
+    string condition = weatherJson["current"]["condition"]["text"];
+
+    Serial.printf("\n");
+    Serial.printf("The weather in %s is %s C and %s\n", intent.location_name.c_str(), temp.c_str(), condition.c_str());
+    Serial.printf("\n");
+
+    m_speaker->playWeather(condition);
 
     return SILENT_SUCCESS;
 }
